@@ -107,7 +107,6 @@ PLUGIN_OBJS = ${OBJS:.o=.plugin.o}
 
 MO_FILES = ${LOCALES:.po=.mo}
 
-.SILENT:
 .SUFFIXES:
 .SUFFIXES: .beam .c .c.dep .cc .cc.dep .class .cxx .cxx.dep .d .erl .lib.o .java .mo .m .m.dep .mm .mm.dep .o .plugin.o .po .py .pyc .rc .S .S.dep .xpm
 .PHONY: all subdirs pre-depend depend install install-extra uninstall uninstall-extra clean distclean locales ${SUBDIRS}
