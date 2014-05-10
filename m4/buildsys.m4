@@ -109,7 +109,7 @@ AC_DEFUN([BUILDSYS_SHARED_LIB], [
 		darwin*)
 			AC_MSG_RESULT(Darwin)
 			LIB_CFLAGS='-fPIC -DPIC -mmacosx-version-min=10.5'
-			LIB_LDFLAGS='-dynamiclib -mmacosx-version-min=10.5 -current_version ${LIB_MAJOR}.${LIB_MINOR} -compatibility_version ${LIB_MAJOR} -install_name "${libdir}/$$(i=${LIB}; echo $${i%${LIB_SUFFIX}}).${LIB_MAJOR}${LIB_SUFFIX}"'
+			LIB_LDFLAGS='-dynamiclib -mmacosx-version-min=10.5 -current_version ${LIB_MAJOR}.${LIB_MINOR} -compatibility_version ${LIB_MAJOR} -install_name "${libdir}/$$(i=${SHARED_LIB}; echo $${i%${LIB_SUFFIX}}).${LIB_MAJOR}${LIB_SUFFIX}"'
 			LIB_PREFIX='lib'
 			LIB_SUFFIX='.dylib'
 			LDFLAGS_RPATH='-Wl,-rpath,${libdir}'
