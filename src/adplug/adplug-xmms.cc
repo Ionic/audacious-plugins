@@ -28,19 +28,44 @@
 #include "silentopl.h"
 #include "players.h"
 
-extern "C" {
-#include <audacious/input.h>
-#include <audacious/misc.h>
-#include <audacious/i18n.h>
 #include <libaudcore/audstrings.h>
+#include <libaudcore/i18n.h>
+#include <libaudcore/plugin.h>
+#include <libaudcore/runtime.h>
 
-#include "adplug-xmms.h"
-}
+class AdPlugXMMS : public InputPlugin
+{
+public:
+    static const char * const exts[];
+
+    static constexpr PluginInfo info = {
+        N_("AdPlug (AdLib Player)"),
+        PACKAGE
+    };
+
+    static constexpr auto iinfo = InputInfo ()
+        .with_exts (exts);
+
+    constexpr AdPlugXMMS () : InputPlugin (info, iinfo) {}
+
+    bool init ();
+    void cleanup ();
+
+    bool is_our_file (const char * filename, VFSFile & file);
+    Tuple read_tuple (const char * filename, VFSFile & file);
+    bool play (const char * filename, VFSFile & file);
+};
+
+EXPORT AdPlugXMMS aud_plugin_instance;
+
+const char * const AdPlugXMMS::exts[] = {
+    "a2m", "adl", "amd", "bam", "cff", "cmf", "d00", "dfm", "dmo", "dro",
+    "dtm", "hsc", "hsp", "ins", "jbm", "ksm", "laa", "lds", "m", "mad",
+    "mkj", "msc", "rad", "raw", "rix", "rol", "s3m", "sa2", "sat", "sci",
+    "sng", "wlf", "xad", "xsm", nullptr
+};
 
 /***** Defines *****/
-
-// Version string
-#define ADPLUG_NAME	"AdPlug (AdLib Sound Player)"
 
 // Sound buffer size in samples
 #define SNDBUFSIZE	512
@@ -57,26 +82,20 @@ extern "C" {
 
 /***** Global variables *****/
 
-static bool_t audio_error = FALSE;
-
 // Configuration (and defaults)
-static struct
-{
-  int freq;
-  bool_t bit16, stereo, endless;
-  CPlayers players;
-} conf =
-{
-44100l, true, false, false, CAdPlug::getPlayers()};
+static struct {
+  int freq = 44100l;
+  bool bit16 = true, stereo = false, endless = false;
+  CPlayers players = CAdPlug::getPlayers();
+} conf;
 
 // Player variables
-static struct
-{
-  CPlayer *p;
-  CAdPlugDatabase *db;
-  unsigned int subsong, songlength;
-  char * filename;
-} plr = {0, 0, 0, 0, NULL};
+static struct {
+  CPlayer *p = nullptr;
+  CAdPlugDatabase *db = nullptr;
+  unsigned int subsong = 0, songlength = 0;
+  String filename;
+} plr;
 
 /***** Debugging *****/
 
@@ -104,61 +123,62 @@ dbg_printf (const char *fmt, ...)
 #endif
 
 static CPlayer *
-factory (VFSFile * fd, Copl * newopl)
+factory (VFSFile & fd, Copl * newopl)
 {
   return CAdPlug::factory (fd, newopl, conf.players);
 }
 
 /***** Main player (!! threaded !!) *****/
 
-extern "C" Tuple * adplug_get_tuple (const char * filename, VFSFile * fd)
+Tuple AdPlugXMMS::read_tuple (const char * filename, VFSFile & fd)
 {
-  Tuple * ti = NULL;
+  Tuple tuple;
   CSilentopl tmpopl;
 
   if (!fd)
-    return NULL;
+    return tuple;
 
   CPlayer *p = factory (fd, &tmpopl);
 
   if (p)
   {
-    ti = tuple_new_from_filename (filename);
+    tuple.set_filename (filename);
 
     if (! p->getauthor().empty())
-      tuple_set_str(ti, FIELD_ARTIST, p->getauthor().c_str());
+      tuple.set_str (Tuple::Artist, p->getauthor().c_str());
 
     if (! p->gettitle().empty())
-      tuple_set_str(ti, FIELD_TITLE, p->gettitle().c_str());
+      tuple.set_str (Tuple::Title, p->gettitle().c_str());
     else if (! p->getdesc().empty())
-      tuple_set_str(ti, FIELD_TITLE, p->getdesc().c_str());
+      tuple.set_str (Tuple::Title, p->getdesc().c_str());
 
-    tuple_set_str(ti, FIELD_CODEC, p->gettype().c_str());
-    tuple_set_str(ti, FIELD_QUALITY, _("sequenced"));
-    tuple_set_int(ti, FIELD_LENGTH, p->songlength (plr.subsong));
+    tuple.set_str (Tuple::Codec, p->gettype().c_str());
+    tuple.set_str (Tuple::Quality, _("sequenced"));
+    tuple.set_int (Tuple::Length, p->songlength (plr.subsong));
     delete p;
   }
 
-  return ti;
+  return tuple;
 }
 
-// Define sampsize macro (only usable inside play_loop()!)
-#define sampsize ((bit16 ? 2 : 1) * (stereo ? 2 : 1))
-
-static bool_t play_loop (const char * filename, VFSFile * fd)
 /* Main playback thread. Takes the filename to play as argument. */
+bool AdPlugXMMS::play (const char * filename, VFSFile & fd)
 {
-  dbg_printf ("play_loop(\"%s\"): ", filename);
+  dbg_printf ("adplug_play(\"%s\"): ", filename);
+
+  // Set XMMS main window information
+  dbg_printf ("xmms, ");
+  int sampsize = (conf.bit16 ? 2 : 1) * (conf.stereo ? 2 : 1);
+  set_stream_bitrate (conf.freq * sampsize * 8);
+
+  // open output plugin
+  dbg_printf ("open, ");
+  open_audio (conf.bit16 ? FORMAT_16 : FORMAT_8, conf.freq, conf.stereo ? 2 : 1);
+
   CEmuopl opl (conf.freq, conf.bit16, conf.stereo);
   long toadd = 0, i, towrite;
   char *sndbuf, *sndbufpos;
-  bool playing = true,          // Song self-end indicator.
-    bit16 = conf.bit16,          // Duplicate config, so it doesn't affect us if
-    stereo = conf.stereo;        // the user changes it while we're playing.
-  unsigned long freq = conf.freq;
-
-  if (!fd)
-    return FALSE;
+  bool playing = true;  // Song self-end indicator.
 
   // Try to load module
   dbg_printf ("factory, ");
@@ -166,25 +186,20 @@ static bool_t play_loop (const char * filename, VFSFile * fd)
   {
     dbg_printf ("error!\n");
     // MessageBox("AdPlug :: Error", "File could not be opened!", "Ok");
-    return FALSE;
+    return false;
   }
 
   // reset to first subsong on new file
   dbg_printf ("subsong, ");
   if (! plr.filename || strcmp (filename, plr.filename))
   {
-    free (plr.filename);
-    plr.filename = strdup (filename);
+    plr.filename = String (filename);
     plr.subsong = 0;
   }
 
   // Allocate audio buffer
   dbg_printf ("buffer, ");
   sndbuf = (char *) malloc (SNDBUFSIZE * sampsize);
-
-  // Set XMMS main window information
-  dbg_printf ("xmms, ");
-  aud_input_set_bitrate (freq * sampsize * 8);
 
   // Rewind player to right subsong
   dbg_printf ("rewind, ");
@@ -196,10 +211,10 @@ static bool_t play_loop (const char * filename, VFSFile * fd)
   dbg_printf ("loop.\n");
   while ((playing || conf.endless))
   {
-    if (aud_input_check_stop ())
+    if (check_stop ())
       break;
 
-    int seek = aud_input_check_seek ();
+    int seek = check_seek ();
 
     // seek requested ?
     if (seek != -1)
@@ -223,19 +238,19 @@ static bool_t play_loop (const char * filename, VFSFile * fd)
     {
       while (toadd < 0)
       {
-        toadd += freq;
+        toadd += conf.freq;
         playing = plr.p->update ();
         if (playing)
           time += (int) (1000 / plr.p->getrefresh ());
       }
-      i = MIN (towrite, (long) (toadd / plr.p->getrefresh () + 4) & ~3);
+      i = std::min (towrite, (long) (toadd / plr.p->getrefresh () + 4) & ~3);
       opl.update ((short *) sndbufpos, i);
       sndbufpos += i * sampsize;
       towrite -= i;
       toadd -= (long) (plr.p->getrefresh () * i);
     }
 
-    aud_input_write_audio (sndbuf, SNDBUFSIZE * sampsize);
+    write_audio (sndbuf, SNDBUFSIZE * sampsize);
   }
 
   // free everything and exit
@@ -244,7 +259,7 @@ static bool_t play_loop (const char * filename, VFSFile * fd)
   plr.p = 0;
   free (sndbuf);
   dbg_printf (".\n");
-  return TRUE;
+  return true;
 }
 
 // sampsize macro not useful anymore.
@@ -252,8 +267,7 @@ static bool_t play_loop (const char * filename, VFSFile * fd)
 
 /***** Informational *****/
 
-extern "C" int
-adplug_is_our_fd (const char * filename, VFSFile * fd)
+bool AdPlugXMMS::is_our_file (const char * filename, VFSFile & fd)
 {
   CSilentopl tmpopl;
 
@@ -264,32 +278,12 @@ adplug_is_our_fd (const char * filename, VFSFile * fd)
   if (p)
   {
     delete p;
-    dbg_printf ("TRUE\n");
-    return TRUE;
+    dbg_printf ("true\n");
+    return true;
   }
 
-  dbg_printf ("FALSE\n");
-  return FALSE;
-}
-
-/***** Player control *****/
-
-extern "C" bool_t
-adplug_play (const char * filename, VFSFile * file)
-{
-  dbg_printf ("adplug_play(\"%s\"): ", filename);
-  audio_error = FALSE;
-
-  // open output plugin
-  dbg_printf ("open, ");
-  if (!aud_input_open_audio (conf.bit16 ? FORMAT_16 : FORMAT_8, conf.freq, conf.stereo ? 2 : 1))
-  {
-    audio_error = TRUE;
-    return TRUE;
-  }
-
-  play_loop (filename, file);
-  return FALSE;
+  dbg_printf ("false\n");
+  return false;
 }
 
 /***** Configuration file handling *****/
@@ -301,9 +295,9 @@ static const char * const adplug_defaults[] = {
  "Stereo", "FALSE",
  "Frequency", "44100",
  "Endless", "FALSE",
- NULL};
+ nullptr};
 
-extern "C" bool_t adplug_init (void)
+bool AdPlugXMMS::init ()
 {
   aud_config_set_defaults (CFG_VERSION, adplug_defaults);
 
@@ -315,26 +309,20 @@ extern "C" bool_t adplug_init (void)
   // Read file type exclusion list
   dbg_printf ("exclusion, ");
   {
-    char * cfgstr = aud_get_str (CFG_VERSION, "Exclude");
+    String cfgstr = aud_get_str (CFG_VERSION, "Exclude");
 
     if (cfgstr[0])
     {
-        char exclude[strlen (cfgstr) + 2];
-        memcpy (exclude, cfgstr, sizeof exclude - 1);
-        exclude[sizeof exclude - 1] = 0;
+        StringBuf exclude = str_concat ({cfgstr, ":"});
         str_replace_char (exclude, ':', 0);
 
         for (char * p = exclude; * p; p += strlen (p) + 1)
             conf.players.remove (conf.players.lookup_filetype (p));
     }
-
-    str_unref (cfgstr);
   }
 
   // Load database from disk and hand it to AdPlug
   dbg_printf ("database");
-  plr.db = new CAdPlugDatabase;
-
   {
     const char *homedir = getenv ("HOME");
 
@@ -343,29 +331,28 @@ extern "C" bool_t adplug_init (void)
       std::string userdb;
       userdb = std::string ("file://") + homedir + "/" ADPLUG_CONFDIR "/" + ADPLUGDB_FILE;
 
-      if (vfs_file_test (userdb.c_str (), VFS_EXISTS))
+      if (VFSFile::test_file (userdb.c_str (), VFS_EXISTS))
       {
+        plr.db = new CAdPlugDatabase;
         plr.db->load (userdb);    // load user's database
         dbg_printf (" (userdb=\"%s\")", userdb.c_str());
+        CAdPlug::set_database (plr.db);
       }
     }
   }
-  CAdPlug::set_database (plr.db);
   dbg_printf (".\n");
 
-  return TRUE;
+  return true;
 }
 
-extern "C" void
-adplug_quit (void)
+void AdPlugXMMS::cleanup ()
 {
   // Close database
   dbg_printf ("db, ");
   if (plr.db)
     delete plr.db;
 
-  free (plr.filename);
-  plr.filename = NULL;
+  plr.filename = String ();
 
   aud_set_bool (CFG_VERSION, "16bit", conf.bit16);
   aud_set_bool (CFG_VERSION, "Stereo", conf.stereo);

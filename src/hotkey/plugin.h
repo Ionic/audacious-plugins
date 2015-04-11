@@ -33,15 +33,15 @@ typedef enum {
 
 
 typedef struct _HotkeyConfiguration {
-    gint key, mask;
-    gint type;
+    unsigned key, mask;
+    unsigned type;
     EVENT event;
     struct _HotkeyConfiguration *next;
 } HotkeyConfiguration;
 
 typedef struct {
-    gint vol_increment;
-    gint vol_decrement;
+    int vol_increment;
+    int vol_decrement;
 
     /* keyboard */
     HotkeyConfiguration first;
@@ -52,7 +52,6 @@ typedef struct {
 void load_config (void);
 void save_config (void);
 PluginConfig* get_config(void);
-gboolean is_loaded (void);
 gboolean handle_keyevent(EVENT event);
 
 #endif

@@ -22,13 +22,14 @@
 
 #include <gtk/gtk.h>
 
-void layout_load (void);
-void layout_save (void);
-void layout_cleanup (void);
+void layout_load ();
+void layout_save ();
+void layout_cleanup ();
 
-GtkWidget * layout_new (void);
-void layout_add_center (GtkWidget * add);
-void layout_add (GtkWidget * add, const char * name);
-void layout_remove (GtkWidget * rem);
+GtkWidget * layout_new ();
+void layout_add_center (GtkWidget * widget);
+void layout_add (PluginHandle * plugin, GtkWidget * widget);
+void layout_remove (PluginHandle * plugin);
+void layout_focus (PluginHandle * plugin);
 
 #endif

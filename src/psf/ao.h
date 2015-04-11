@@ -9,20 +9,16 @@
 
 #include <stdint.h>
 
+#define WANT_AUD_BSWAP
+#include <libaudcore/audio.h>
+#include <libaudcore/index.h>
+
 #define AO_SUCCESS					1
 #define AO_FAIL						0
 #define AO_FAIL_DECOMPRESSION		-1
 
 #define MAX_DISP_INFO_LENGTH		256
 #define AUDIO_RATE					(44100)
-
-#ifndef TRUE
-#define TRUE 1
-#endif
-
-#ifndef FALSE
-#define FALSE 0
-#endif
 
 enum
 {
@@ -37,6 +33,6 @@ enum
 	COMMAND_JUMP
 };
 
-int ao_get_lib(char *filename, uint8_t **buffer, uint64_t *length);
+Index<char> ao_get_lib(char *filename);
 
 #endif // AO_H

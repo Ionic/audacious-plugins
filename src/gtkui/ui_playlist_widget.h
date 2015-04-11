@@ -21,31 +21,41 @@
 #define UI_PLAYLIST_WIDGET_H
 
 #include <gtk/gtk.h>
+#include <libaudcore/playlist.h>
 
 GtkWidget * ui_playlist_widget_new (int playlist);
 int ui_playlist_widget_get_playlist (GtkWidget * widget);
 void ui_playlist_widget_set_playlist (GtkWidget * widget, int playlist);
-void ui_playlist_widget_update (GtkWidget * widget, int type, int at,
- int count);
+void ui_playlist_widget_update (GtkWidget * widget, const Playlist::Update & update);
 void ui_playlist_widget_scroll (GtkWidget * widget);
 
-void ui_playlist_widget_get_column_widths (GtkWidget * widget, char * * widths,
- char * * expand);
-void ui_playlist_widget_set_column_widths (GtkWidget * widget,
- const char * widths, const char * expand);
-
-enum {PW_COL_NUMBER, PW_COL_TITLE, PW_COL_ARTIST, PW_COL_YEAR, PW_COL_ALBUM,
- PW_COL_TRACK, PW_COL_GENRE, PW_COL_QUEUED, PW_COL_LENGTH, PW_COL_PATH,
- PW_COL_FILENAME, PW_COL_CUSTOM, PW_COL_BITRATE, PW_COLS};
+enum {
+    PW_COL_NUMBER,
+    PW_COL_TITLE,
+    PW_COL_ARTIST,
+    PW_COL_YEAR,
+    PW_COL_ALBUM,
+    PW_COL_ALBUM_ARTIST,
+    PW_COL_TRACK,
+    PW_COL_GENRE,
+    PW_COL_QUEUED,
+    PW_COL_LENGTH,
+    PW_COL_PATH,
+    PW_COL_FILENAME,
+    PW_COL_CUSTOM,
+    PW_COL_BITRATE,
+    PW_COLS
+};
 
 extern const char * const pw_col_names[PW_COLS];
 
 extern int pw_num_cols;
 extern int pw_cols[PW_COLS];
+extern int pw_col_widths[PW_COLS];
 
-void pw_col_init (void);
-void * pw_col_create_chooser (void);
-void pw_col_save (void);
-void pw_col_cleanup (void);
+void pw_col_init ();
+void * pw_col_create_chooser ();
+void pw_col_save ();
+void pw_col_cleanup ();
 
 #endif

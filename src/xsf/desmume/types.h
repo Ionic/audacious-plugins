@@ -14,7 +14,7 @@
 
     You should have received a copy of the GNU General Public License
     along with DeSmuME; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #ifndef TYPES_HPP
@@ -124,12 +124,12 @@ typedef int desmume_BOOL;
 #define BOOL desmume_BOOL
 #endif
 
-#ifndef TRUE
-#define TRUE 1
+#ifndef true
+#define true 1
 #endif
 
-#ifndef FALSE
-#define FALSE 0
+#ifndef false
+#define false 0
 #endif
 
 #ifdef __GNUC__

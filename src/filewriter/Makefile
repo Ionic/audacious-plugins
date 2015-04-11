@@ -1,16 +1,18 @@
 PLUGIN = filewriter${PLUGIN_SUFFIX}
 
-SRCS = filewriter.c	\
-       wav.c		\
-       mp3.c		\
-       vorbis.c		\
-       flac.c           \
-       convert.c
+SRCS = filewriter.cc	\
+       wav.cc		\
+       mp3.cc		\
+       vorbis.cc		\
+       flac.cc           \
+       convert.cc
 
 include ../../buildsys.mk
 include ../../extra.mk
 
 plugindir := ${plugindir}/${OUTPUT_PLUGIN_DIR}
+
+LD = ${CXX}
 
 CFLAGS += ${PLUGIN_CFLAGS}
 CPPFLAGS += ${PLUGIN_CPPFLAGS} ${GLIB_CFLAGS} ${GTK_CFLAGS} ${FILEWRITER_CFLAGS} -I../..

@@ -19,12 +19,14 @@
 #ifndef __FFAUDIO_STDINC_H__GUARD
 #define __FFAUDIO_STDINC_H__GUARD
 
-#define _ERROR(...) printf ("ffaudio: " __VA_ARGS__)
+#define __STDC_CONSTANT_MACROS
+#include <libaudcore/plugin.h>
 
-#include <audacious/plugin.h>
+extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
+}
 
 /* FFmpeg and libav remain mostly compatible but have different version numbers.
  * The first three numbers are the required FFmpeg version; the last three are for libav. */
@@ -40,7 +42,9 @@
 #error Please define either HAVE_FFMPEG or HAVE_LIBAV
 #endif
 
-AVIOContext * io_context_new (VFSFile * file);
+AVIOContext * io_context_new (VFSFile & file);
 void io_context_free (AVIOContext * context);
+
+Index<char> read_itunes_cover (const char * filename, VFSFile & file);
 
 #endif

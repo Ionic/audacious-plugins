@@ -9,13 +9,11 @@
 
 #include "archive.h"
 
-extern "C" {
 #include <libaudcore/vfs.h>
-}
 
 class arch_Raw: public Archive
 {
-    VFSFile *mFileDesc;
+    VFSFile mFileDesc;
 
 public:
     arch_Raw(const std::string& aFileName);

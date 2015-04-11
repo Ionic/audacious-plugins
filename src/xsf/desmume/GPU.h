@@ -19,7 +19,7 @@
 
 	You should have received a copy of the GNU General Public License
 	along with DeSmuME; if not, write to the Free Software
-	Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #ifndef GPU_H
@@ -31,11 +31,6 @@
 #include "registers.h"
 #include "FIFO.h"
 #include "MMU.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /*******************************************************************************
     this structure is for display control,
@@ -394,13 +389,14 @@ typedef struct _reg_dispx {
 
 
 
-
+#ifndef __cplusplus
 #ifndef min
 #define min(a,b) (((a)<(b))?(a):(b))
 #endif
 
 #ifndef max
 #define max(a,b) (((a)>(b))?(a):(b))
+#endif
 #endif
 
 typedef BOOL (*fun_gl_Begin) (int screen);
@@ -547,7 +543,7 @@ typedef struct
 /*12*/    unsigned PaletteIndex:4;
 /*10*/    unsigned Priority:2;
 // attr3
-unsigned attr3:16;    
+unsigned attr3:16;
 #else
 // attr0
 /* 0*/	unsigned Y:8;
@@ -804,10 +800,6 @@ void GPU_setBLDALPHA_EVA(GPU *gpu, u8 val);
 void GPU_setBLDALPHA_EVB(GPU *gpu, u8 val);
 
 void GPU_setBLDY_EVY	(GPU *gpu, u8 val);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 

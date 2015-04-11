@@ -1,41 +1,31 @@
 #ifndef MODPLUG_SETTINGS_H
 #define MODPLUG_SETTINGS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <libaudcore/core.h>
-
 typedef struct {
     int mBits;
     int mChannels;
     int mResamplingMode;
     int mFrequency;
 
-    bool_t mReverb;
+    bool mReverb;
     int mReverbDepth;
     int mReverbDelay;
 
-    bool_t mMegabass;
+    bool mMegabass;
     int mBassAmount;
     int mBassRange;
 
-    bool_t mSurround;
+    bool mSurround;
     int mSurroundDepth;
     int mSurroundDelay;
 
-    bool_t mPreamp;
-    float mPreampLevel;
+    bool mPreamp;
+    double mPreampLevel;
 
-    bool_t mOversamp;
-    bool_t mNoiseReduction;
-    bool_t mGrabAmigaMOD;
+    bool mOversamp;
+    bool mNoiseReduction;
+    bool mGrabAmigaMOD;
     int mLoopCount;
 } ModplugSettings;
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif /* MODPLUG_SETTINGS_H */

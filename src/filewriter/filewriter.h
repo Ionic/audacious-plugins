@@ -23,35 +23,25 @@
 #ifndef FILEWRITER_H
 #define FILEWRITER_H
 
-#include <gtk/gtk.h>
-#include <stdio.h>
-#include <string.h>
-
-#include <audacious/plugin.h>
-#include <audacious/i18n.h>
+#define WANT_AUD_BSWAP
+#include <libaudcore/audio.h>
+#include <libaudcore/tuple.h>
+#include <libaudcore/vfs.h>
 
 struct format_info {
-    gint format;
+    int format;
     int frequency;
     int channels;
 };
 
-extern struct format_info input;
-
-extern VFSFile *output_file;
-extern guint64 offset;
-extern Tuple * tuple;
-
-typedef gint (*write_output_callback)(void *ptr, gint length);
-
-typedef struct _FileWriter
+struct FileWriterImpl
 {
-    void (*init)(write_output_callback write_output_func);
-    void (*configure)(void);
-    gint (*open)(void);
-    void (*write)(void *ptr, gint length);
-    void (*close)(void);
-    int (*format_required)(int fmt);
-} FileWriter;
+    void (* init) ();
+    void (* configure) ();
+    bool (* open) (VFSFile & file, const format_info & info, const Tuple & tuple);
+    void (* write) (VFSFile & file, const void * data, int length);
+    void (* close) (VFSFile & file);
+    int (* format_required) (int fmt);
+};
 
 #endif

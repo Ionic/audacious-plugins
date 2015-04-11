@@ -21,8 +21,7 @@
 #ifndef _I_AOSD_CFG_H
 #define _I_AOSD_CFG_H 1
 
-#include "aosd_common.h"
-#include <glib.h>
+#include <libaudcore/objects.h>
 
 /* in this release only one user font is supported */
 #define AOSD_TEXT_FONTS_NUM 1
@@ -31,6 +30,16 @@
 #define AOSD_MISC_TRANSPARENCY_FAKE 0
 #define AOSD_MISC_TRANSPARENCY_REAL 1
 
+#define AOSD_DECO_STYLE_MAX_COLORS 2
+
+enum
+{
+  AOSD_DECO_STYLE_RECT,
+  AOSD_DECO_STYLE_ROUNDRECT,
+  AOSD_DECO_STYLE_CONCAVERECT,
+  AOSD_DECO_STYLE_NONE,
+  AOSD_NUM_DECO_STYLES
+};
 
 enum
 {
@@ -45,13 +54,21 @@ enum
   AOSD_POSITION_PLACEMENT_BOTTOMRIGHT
 };
 
+enum
+{
+  AOSD_TRIGGER_PB_START = 0,
+  AOSD_TRIGGER_PB_TITLECHANGE,
+  AOSD_TRIGGER_PB_PAUSEON,
+  AOSD_TRIGGER_PB_PAUSEOFF,
+  AOSD_NUM_TRIGGERS
+};
 
 typedef struct
 {
-  guint16 red;
-  guint16 green;
-  guint16 blue;
-  guint16 alpha;
+  int red;
+  int green;
+  int blue;
+  int alpha;
 }
 aosd_color_t;
 
@@ -59,8 +76,8 @@ aosd_color_t;
 /* config portion containing osd decoration information */
 typedef struct
 {
-  gint code;
-  GArray *colors;
+  int code;
+  aosd_color_t colors[AOSD_DECO_STYLE_MAX_COLORS];
 }
 aosd_cfg_osd_decoration_t;
 
@@ -68,11 +85,10 @@ aosd_cfg_osd_decoration_t;
 /* config portion containing osd text information */
 typedef struct
 {
-  gchar *fonts_name[AOSD_TEXT_FONTS_NUM]; /* pooled */
+  String fonts_name[AOSD_TEXT_FONTS_NUM];
   aosd_color_t fonts_color[AOSD_TEXT_FONTS_NUM];
-  gboolean fonts_draw_shadow[AOSD_TEXT_FONTS_NUM];
+  bool fonts_draw_shadow[AOSD_TEXT_FONTS_NUM];
   aosd_color_t fonts_shadow_color[AOSD_TEXT_FONTS_NUM];
-  gboolean utf8conv_disable;
 }
 aosd_cfg_osd_text_t;
 
@@ -80,9 +96,9 @@ aosd_cfg_osd_text_t;
 /* config portion containing osd animation information */
 typedef struct
 {
-  gint timing_display;
-  gint timing_fadein;
-  gint timing_fadeout;
+  int timing_display;
+  int timing_fadein;
+  int timing_fadeout;
 }
 aosd_cfg_osd_animation_t;
 
@@ -90,11 +106,11 @@ aosd_cfg_osd_animation_t;
 /* config portion containing osd position information */
 typedef struct
 {
-  gint placement;
-  gint offset_x;
-  gint offset_y;
-  gint maxsize_width;
-  gint multimon_id;
+  int placement;
+  int offset_x;
+  int offset_y;
+  int maxsize_width;
+  int multimon_id;
 }
 aosd_cfg_osd_position_t;
 
@@ -102,7 +118,7 @@ aosd_cfg_osd_position_t;
 /* config portion containing osd trigger information */
 typedef struct
 {
-  GArray *active;
+  int enabled[AOSD_NUM_TRIGGERS];
 }
 aosd_cfg_osd_trigger_t;
 
@@ -110,7 +126,7 @@ aosd_cfg_osd_trigger_t;
 /* config portion containing osd miscellaneous information */
 typedef struct
 {
-  gint transparency_mode;
+  int transparency_mode;
 }
 aosd_cfg_osd_misc_t;
 
@@ -125,26 +141,13 @@ typedef struct
   aosd_cfg_osd_trigger_t trigger;
   aosd_cfg_osd_misc_t misc;
 }
-aosd_cfg_osd_t;
-
-
-/* config portion containing all config information */
-typedef struct
-{
-  gboolean set;
-
-  aosd_cfg_osd_t * osd;
-}
 aosd_cfg_t;
 
 
 /* API */
-aosd_cfg_t * aosd_cfg_new ( void );
-void aosd_cfg_delete ( aosd_cfg_t * cfg );
-aosd_cfg_osd_t * aosd_cfg_osd_new( void );
-void aosd_cfg_osd_delete ( aosd_cfg_osd_t * cfg_osd );
-aosd_cfg_osd_t * aosd_cfg_osd_copy ( aosd_cfg_osd_t * cfg_osd );
-gint aosd_cfg_load ( aosd_cfg_t * cfg );
-gint aosd_cfg_save ( aosd_cfg_t * cfg );
+void aosd_cfg_load (aosd_cfg_t & cfg);
+void aosd_cfg_save (const aosd_cfg_t & cfg);
+
+extern aosd_cfg_t global_config;
 
 #endif /* !_I_AOSD_CFG_H */

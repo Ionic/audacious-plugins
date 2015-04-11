@@ -1,11 +1,11 @@
 PLUGIN = aosd${PLUGIN_SUFFIX}
 
-SRCS = aosd.c		\
-       aosd_osd.c	\
-       aosd_style.c	\
-       aosd_trigger.c	\
-       aosd_ui.c	\
-       aosd_cfg.c	\
+SRCS = aosd.cc		\
+       aosd_osd.cc	\
+       aosd_style.cc	\
+       aosd_trigger.cc	\
+       aosd_ui.cc	\
+       aosd_cfg.cc	\
        ghosd.c		\
        ghosd-main.c
 
@@ -13,6 +13,8 @@ include ../../buildsys.mk
 include ../../extra.mk
 
 plugindir := ${plugindir}/${GENERAL_PLUGIN_DIR}
+
+LD = ${CXX}
 
 CFLAGS += ${PLUGIN_CFLAGS}
 CPPFLAGS += ${PLUGIN_CPPFLAGS}  ${GTK_CFLAGS} ${GLIB_CFLAGS} ${XRENDER_CFLAGS} ${XCOMPOSITE_CFLAGS} -I../..

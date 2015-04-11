@@ -3,12 +3,8 @@
 
 #include "filewriter.h"
 
-gpointer convert_output;
-
-gboolean convert_init(gint input_fmt, gint output_fmt, gint channels);
-
-gint convert_process(gpointer ptr, gint length);
-
-void convert_free(void);
+void convert_init (int input_fmt, int output_fmt);
+const Index<char> & convert_process (const void * ptr, int length);
+void convert_free ();
 
 #endif

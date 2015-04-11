@@ -23,48 +23,29 @@
 #ifndef XMMS_SID_H
 #define XMMS_SID_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <libaudcore/core.h>
+#include <libaudcore/index.h>
+#include <libaudcore/objects.h>
 
 /*
  * Some constants and defines
  */
 
-/* Size for some small buffers (always static variables) */
-#define XS_BUF_SIZE             (2048)
-
 /* Default audio rendering frequency in Hz
  */
 #define XS_AUDIO_FREQ           (44100)
 
-/* Size of data buffer used for SID-tune MD5 hash calculation.
- * If this is too small, the computed hash will be incorrect.
- * Largest SID files I've seen are ~70kB. */
-#define XS_SIDBUF_SIZE          (128*1024)
-
 /* Plugin-wide typedefs
  */
 typedef struct {
-    int tuneSpeed, tuneLength;
-    bool_t tunePlayed;
+    int tuneSpeed = -1;
+    int tuneLength = -1;
 } xs_subtuneinfo_t;
 
 typedef struct {
-    char *sidFilename, *sidName, *sidComposer, *sidCopyright, *sidFormat;
+    String sidFilename, sidName, sidComposer, sidCopyright, sidFormat;
     int loadAddr, initAddr, playAddr, dataFileLen, sidModel;
     int nsubTunes, startTune;
-    xs_subtuneinfo_t *subTunes;
+    Index<xs_subtuneinfo_t> subTunes;
 } xs_tuneinfo_t;
 
-/* Plugin function prototypes
- */
-#define xs_verror(fmt, args) vfprintf(stderr, fmt, args)
-#define xs_error(...) fprintf(stderr, __VA_ARGS__)
-
-#ifdef __cplusplus
-}
-#endif
 #endif /* XMMS_SID_H */

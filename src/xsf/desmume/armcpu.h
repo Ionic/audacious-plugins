@@ -16,7 +16,7 @@
 
     You should have received a copy of the GNU General Public License
     along with DeSmuME; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #ifndef ARM_CPU
@@ -25,10 +25,6 @@
 #include "types.h"
 #include "bits.h"
 #include "MMU.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #define ARMCPU_ARM7 1
 #define ARMCPU_ARM9 0
@@ -249,8 +245,8 @@ static INLINE void NDS_makeARM9Int(u32 num)
         /* generate the interrupt if enabled */
 	if ((MMU.reg_IE[0] & (1 << num)) && MMU.reg_IME[0])
 	{
-		NDS_ARM9.wIRQ = TRUE;
-		NDS_ARM9.waitIRQ = FALSE;
+		NDS_ARM9.wIRQ = true;
+		NDS_ARM9.waitIRQ = false;
 	}
 }
 
@@ -262,8 +258,8 @@ static INLINE void NDS_makeARM7Int(u32 num)
         /* generate the interrupt if enabled */
 	if ((MMU.reg_IE[1] & (1 << num)) && MMU.reg_IME[1])
 	{
-		NDS_ARM7.wIRQ = TRUE;
-		NDS_ARM7.waitIRQ = FALSE;
+		NDS_ARM7.wIRQ = true;
+		NDS_ARM7.waitIRQ = false;
 	}
 }
 
@@ -279,10 +275,5 @@ static INLINE void NDS_makeInt(u8 proc_ID,u32 num)
 			break ;
 	}
 }
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

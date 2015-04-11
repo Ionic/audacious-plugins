@@ -22,36 +22,75 @@
 
 #include <pthread.h>
 #include <gtk/gtk.h>
-#include <libaudcore/index.h>
+
+#include <libaudcore/i18n.h>
+#include <libaudcore/plugin.h>
 
 #include "ladspa.h"
 
 #define LADSPA_BUFLEN 1024
 
-typedef struct {
+struct PreferencesWidget;
+
+struct ControlData {
     int port;
-    char * name;
-    char is_toggle;
+    String name;
+    bool is_toggle;
     float min, max, def;
-} ControlData;
+};
 
-typedef struct {
-    char * path;
-    const LADSPA_Descriptor * desc;
-    Index * controls; /* (ControlData *) */
-    GArray * in_ports, * out_ports; /* (int) */
-    char selected;
-} PluginData;
+struct PluginData
+{
+    String path;
+    const LADSPA_Descriptor & desc;
+    Index<ControlData> controls;
+    Index<int> in_ports, out_ports;
+    bool selected = false;
 
-typedef struct {
-    PluginData * plugin;
-    float * values;
-    char selected;
-    char active;
-    Index * instances; /* (LADSPA_Handle) */
-    float * * in_bufs, * * out_bufs; /* (float *) */
-    GtkWidget * settings_win;
-} LoadedPlugin;
+    PluginData (const char * path, const LADSPA_Descriptor & desc) :
+        path (path),
+        desc (desc) {}
+};
+
+struct LoadedPlugin
+{
+    PluginData & plugin;
+    Index<float> values;
+    bool selected = false;
+    bool active = false;
+    Index<LADSPA_Handle> instances;
+    Index<Index<float>> in_bufs, out_bufs;
+    GtkWidget * settings_win = nullptr;
+
+    LoadedPlugin (PluginData & plugin) :
+        plugin (plugin) {}
+};
+
+class LADSPAHost : public EffectPlugin
+{
+public:
+    static const char about[];
+    static const char * const defaults[];
+    static const PreferencesWidget widgets[];
+    static const PluginPreferences prefs;
+
+    static constexpr PluginInfo info = {
+        N_("LADSPA Host"),
+        PACKAGE,
+        about,
+        & prefs
+    };
+
+    constexpr LADSPAHost () : EffectPlugin (info, 0, true) {}
+
+    bool init ();
+    void cleanup ();
+
+    void start (int & channels, int & rate);
+    Index<float> & process (Index<float> & data);
+    bool flush (bool force);
+    Index<float> & finish (Index<float> & data, bool end_of_playlist);
+};
 
 /* plugin.c */
 
@@ -60,36 +99,29 @@ typedef struct {
  * audio thread is reading from them. */
 
 extern pthread_mutex_t mutex;
-extern char * module_path;
-extern Index * modules; /* (GModule *) */
-extern Index * plugins; /* (PluginData *) */
-extern Index * loadeds; /* (LoadedPlugin *) */
+extern String module_path;
+extern Index<GModule *> modules;
+extern Index<SmartPtr<PluginData>> plugins;
+extern Index<SmartPtr<LoadedPlugin>> loadeds;
 
-extern GtkWidget * about_win;
-extern GtkWidget * config_win;
 extern GtkWidget * plugin_list;
 extern GtkWidget * loaded_list;
 
-LoadedPlugin * enable_plugin_locked (PluginData * plugin);
-void disable_plugin_locked (int i);
+LoadedPlugin & enable_plugin_locked (PluginData & plugin);
+void disable_plugin_locked (LoadedPlugin & loaded);
 
 /* effect.c */
 
-void shutdown_plugin_locked (LoadedPlugin * loaded);
-
-void ladspa_start (gint * channels, gint * rate);
-void ladspa_process (gfloat * * data, gint * samples);
-void ladspa_flush (void);
-void ladspa_finish (gfloat * * data, gint * samples);
+void shutdown_plugin_locked (LoadedPlugin & loaded);
 
 /* plugin-list.c */
 
-GtkWidget * create_plugin_list (void);
+GtkWidget * create_plugin_list ();
 void update_plugin_list (GtkWidget * list);
 
 /* loaded-list.c */
 
-GtkWidget * create_loaded_list (void);
+GtkWidget * create_loaded_list ();
 void update_loaded_list (GtkWidget * list);
 
 #endif

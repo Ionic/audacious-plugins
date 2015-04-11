@@ -10,17 +10,9 @@
 #ifndef __VCEDIT_H
 #define __VCEDIT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif 
-
-#include <stdio.h>
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>
-#include <audacious/plugin.h>
-
-typedef gint64 (*vcedit_read_func)(void *, gint64, gint64, void *);
-typedef gint64 (*vcedit_write_func)(const void *, gint64, gint64, void *);
+#include <libaudcore/plugin.h>
 
 typedef struct {
 	ogg_sync_state	 *oy;
@@ -29,16 +21,13 @@ typedef struct {
 	vorbis_comment	 *vc;
 	vorbis_info       vi;
 
-	vcedit_read_func  read;
-	vcedit_write_func write;
-
-	void		 *in;
+	VFSFile		 *in;
 	long		  serial;
 	unsigned char	 *mainbuf;
 	unsigned char	 *bookbuf;
 	int		  mainlen;
 	int		  booklen;
-	char 	         *lasterror;
+	const char 	         *lasterror;
 	char             *vendor;
 	int               prevW;
 	int               extrapage;
@@ -48,16 +37,9 @@ typedef struct {
 extern vcedit_state *vcedit_new_state(void);
 extern void vcedit_clear(vcedit_state *state);
 extern vorbis_comment *vcedit_comments(vcedit_state *state);
-extern int vcedit_open(vcedit_state *state, VFSFile *in);
-extern int vcedit_open_callbacks(vcedit_state *state, void *in,
-                                 vcedit_read_func read_func,
-                                 vcedit_write_func write_func);
-extern int vcedit_write(vcedit_state *state, void *out);
-extern char *vcedit_error(vcedit_state *state);
-
-#ifdef __cplusplus
-}
-#endif 
+extern int vcedit_open(vcedit_state *state, VFSFile &in);
+extern int vcedit_write(vcedit_state *state, VFSFile &out);
+extern const char *vcedit_error(vcedit_state *state);
 
 #endif /* __VCEDIT_H */
 

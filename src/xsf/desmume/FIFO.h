@@ -18,17 +18,13 @@
 
     You should have received a copy of the GNU General Public License
     along with DeSmuME; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #ifndef FIFO_H
 #define FIFO_H
 
 #include "types.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef struct
 {
@@ -43,9 +39,5 @@ typedef struct
 void FIFOInit(FIFO * fifo);
 void FIFOAdd(FIFO * fifo, u32 v);
 u32 FIFOValue(FIFO * fifo);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
