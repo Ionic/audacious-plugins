@@ -89,8 +89,6 @@ void i_fileinfo_text_fill (midifile_t * mf, GtkTextBuffer * text_tb, GtkTextBuff
 
         switch (event->type)
         {
-            char * utf8;
-
         case SND_SEQ_EVENT_META_TEXT:
             gtk_text_buffer_insert_at_cursor (text_tb, event->metat, -1);
             break;
