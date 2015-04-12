@@ -83,7 +83,7 @@ AC_REQUIRE([AC_SYS_LARGEFILE])
 if test "x$GCC" = "xyes"; then
     CFLAGS="$CFLAGS -std=gnu99 -ffast-math -Wall -pipe"
     if test "x$HAVE_DARWIN" = "xyes"; then
-        CXXFLAGS="$CXXFLAGS -std=gnu++11 -ffast-math -Wall -pipe"
+        CXXFLAGS="$CXXFLAGS -std=c++11 -ffast-math -Wall -pipe"
         LDFLAGS="$LDFLAGS"
     else
         CXXFLAGS="$CXXFLAGS -std=gnu++11 -ffast-math -Wall -pipe"
