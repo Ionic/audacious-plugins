@@ -219,7 +219,7 @@ pre-depend:
 ${PROG} ${PROG_NOINST}: ${EXT_DEPS} ${OBJS} ${OBJS_EXTRA}
 	${LINK_STATUS}
 	out="$@"; \
-	${LD} -o $@ ${OBJS} ${OBJS_EXTRA} ${LDFLAGS} ${LIBS}; \
+	${LD} -o $@ ${OBJS} ${OBJS_EXTRA} ${LIBS} ${LDFLAGS}; \
 	if [ "$${?}" -eq "0" ]; then \
 		${LINK_OK}; \
 	else \
@@ -247,7 +247,7 @@ ${JARFILE}: ${EXT_DEPS} ${JAR_MANIFEST} ${OBJS} ${OBJS_EXTRA}
 ${SHARED_LIB} ${SHARED_LIB_NOINST}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
 	${LINK_STATUS}
 	out="$@"; \
-	${LD} -o $@ ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${LIB_LDFLAGS} ${LIB_LDFLAGS_INSTALL_NAME} ${LDFLAGS} ${LIBS}; \
+	${LD} -o $@ ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${LIB_LDFLAGS} ${LIB_LDFLAGS_INSTALL_NAME} ${LIBS} ${LDFLAGS}; \
 	if [ "$${?}" -eq "0" ]; then \
 		${LINK_OK}; \
 	else \
@@ -280,7 +280,7 @@ ${FRAMEWORK}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
 	fi
 	${LINK_STATUS}
 	out="$@"; \
-	${LD} -o $$out/$${out%.framework} ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${FRAMEWORK_LDFLAGS} ${FRAMEWORK_LDFLAGS_INSTALL_NAME} ${LDFLAGS} ${LIBS} && ${CODESIGN} -fs ${CODESIGN_IDENTITY} --timestamp=none $$out; \
+	${LD} -o $$out/$${out%.framework} ${LIB_OBJS} ${LIB_OBJS_EXTRA} ${FRAMEWORK_LDFLAGS} ${FRAMEWORK_LDFLAGS_INSTALL_NAME} ${LIBS} ${LDFLAGS} && ${CODESIGN} -fs ${CODESIGN_IDENTITY} --timestamp=none $$out; \
 	if [ "$${?}" -eq "0" ]; then \
 		${LINK_OK}; \
 	else \
@@ -290,7 +290,7 @@ ${FRAMEWORK}: ${EXT_DEPS} ${LIB_OBJS} ${LIB_OBJS_EXTRA}
 
 ${MORPHOS_LIB} ${MORPHOS_LIB_NOINST}: ${EXT_DEPS} ${MORPHOS_LIB_OBJS} ${MORPHOS_LIB_OBJS_EXTRA}
 	${LINK_STATUS}
-	${LD} -o $@ ${MORPHOS_LIB_OBJS} ${MORPHOS_LIB_OBJS_EXTRA} -nostartfiles ${LDFLAGS} ${LIBS}; \
+	${LD} -o $@ ${MORPHOS_LIB_OBJS} ${MORPHOS_LIB_OBJS_EXTRA} -nostartfiles ${LIBS} ${LDFLAGS}; \
 	if [ "$${?}" -eq "0" ]; then \
 		${LINK_OK}; \
 	else \
@@ -300,7 +300,7 @@ ${MORPHOS_LIB} ${MORPHOS_LIB_NOINST}: ${EXT_DEPS} ${MORPHOS_LIB_OBJS} ${MORPHOS_
 ${PLUGIN} ${PLUGIN_NOINST}: ${EXT_DEPS} ${PLUGIN_OBJS}
 	${LINK_STATUS}
 	out="$@"; \
-	${LD} -o $@ ${PLUGIN_OBJS} ${PLUGIN_OBJS_EXTRA} ${PLUGIN_LDFLAGS} ${LDFLAGS} ${LIBS}; \
+	${LD} -o $@ ${PLUGIN_OBJS} ${PLUGIN_OBJS_EXTRA} ${PLUGIN_LDFLAGS} ${LIBS} ${LDFLAGS}; \
 	if [ "$${?}" -eq "0" ]; then \
 		${LINK_OK}; \
 	else \
